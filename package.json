@@ -1,0 +1,7 @@
+{
+  "name": "kloub-air-plomberie-project",
+  "private": true,
+  "scripts": {
+    "check": "node scripts/check-project.mjs"
+  }
+}

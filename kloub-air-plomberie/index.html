@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kloub Air Plomberie - Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="assets/logo-kap.png" alt="Kloub Air Plomberie" class="brand-logo">
+        <div>
+          <p class="eyebrow">Dashboard client</p>
+          <h1>Kloub Air Plomberie</h1>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Navigation principale">
+        <button class="nav-item is-active" type="button" data-panel="overview">Vue d'ensemble</button>
+        <button class="nav-item" type="button" data-panel="requests">Demandes</button>
+        <button class="nav-item" type="button" data-panel="planning">Planning</button>
+        <button class="nav-item" type="button" data-panel="settings">Connexion</button>
+      </nav>
+
+      <div class="backend-card">
+        <span class="status-dot"></span>
+        <div>
+          <strong>Backend déconnecté</strong>
+          <p>Aucune donnée distante ou feuille Google n'est appelée.</p>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Suivi opérationnel</p>
+          <h2>Demandes plomberie, chauffage et climatisation</h2>
+        </div>
+        <div class="topbar-actions">
+          <button class="secondary-action" type="button" id="reset-demo">Réinitialiser</button>
+          <button class="primary-action" type="button" id="add-request">Nouvelle demande</button>
+        </div>
+      </header>
+
+      <section class="panel is-active" id="overview" aria-labelledby="overview-title">
+        <div class="section-heading">
+          <h3 id="overview-title">Vue d'ensemble</h3>
+          <p>Données de démonstration stockées uniquement dans le navigateur.</p>
+        </div>
+
+        <div class="kpi-grid" id="kpi-grid"></div>
+
+        <div class="content-grid">
+          <article class="surface">
+            <div class="surface-header">
+              <h4>Priorités du jour</h4>
+              <span id="today-count">0 demande</span>
+            </div>
+            <div class="priority-list" id="priority-list"></div>
+          </article>
+
+          <article class="surface">
+            <div class="surface-header">
+              <h4>Répartition</h4>
+              <span>Par typologie</span>
+            </div>
+            <div class="service-chart" id="service-chart"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel" id="requests" aria-labelledby="requests-title">
+        <div class="section-heading row-heading">
+          <div>
+            <h3 id="requests-title">Demandes client</h3>
+            <p>Liste locale modifiable pour valider l'interface avant branchement backend Kloub Air.</p>
+          </div>
+          <select id="status-filter" aria-label="Filtrer par statut">
+            <option value="all">Tous les statuts</option>
+            <option value="Nouveau">Nouveau</option>
+            <option value="A planifier">A planifier</option>
+            <option value="En cours">En cours</option>
+            <option value="Terminé">Terminé</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Service</th>
+                <th>Urgence</th>
+                <th>Créneau</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="request-rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="planning" aria-labelledby="planning-title">
+        <div class="section-heading">
+          <h3 id="planning-title">Planning terrain</h3>
+          <p>Préparation des interventions par demi-journée.</p>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </section>
+
+      <section class="panel" id="settings" aria-labelledby="settings-title">
+        <div class="section-heading">
+          <h3 id="settings-title">Connexion backend</h3>
+          <p>La connexion est volontairement bloquée dans cette première version.</p>
+        </div>
+        <article class="surface settings-surface">
+          <h4>Mode démonstration actif</h4>
+          <p>
+            Le dashboard fonctionne avec `localStorage`. Aucun appel réseau n'est effectué vers
+            un backend ou un service externe.
+          </p>
+          <label for="backend-url">Endpoint backend Kloub Air</label>
+          <input id="backend-url" type="url" value="" placeholder="Déconnecté pour cette version" disabled>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="request-dialog">
+    <form method="dialog" class="dialog-form" id="request-form">
+      <div>
+        <p class="eyebrow">Demande locale</p>
+        <h3>Ajouter une demande</h3>
+      </div>
+      <label>
+        Client
+        <input name="client" required placeholder="Nom du client">
+      </label>
+      <label>
+        Service
+        <select name="service">
+          <option>Plomberie</option>
+          <option>Chauffage</option>
+          <option>Climatisation</option>
+          <option>Dépannage urgent</option>
+        </select>
+      </label>
+      <label>
+        Créneau
+        <input name="slot" required placeholder="Aujourd'hui 14h00">
+      </label>
+      <label>
+        Urgence
+        <select name="priority">
+          <option>Haute</option>
+          <option>Moyenne</option>
+          <option>Basse</option>
+        </select>
+      </label>
+      <div class="dialog-actions">
+        <button value="cancel" type="button" class="secondary-action" id="cancel-dialog">Annuler</button>
+        <button value="default" type="submit" class="primary-action">Ajouter</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
