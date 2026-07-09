@@ -53,10 +53,12 @@
 
         <div class="kpi-grid" id="kpi-grid"></div>
 
+        <div class="urgency-board" id="urgency-board"></div>
+
         <div class="content-grid">
           <article class="surface">
             <div class="surface-header">
-              <h4>Priorités du jour</h4>
+              <h4>Traitements prioritaires</h4>
               <span id="today-count">0 demande</span>
             </div>
             <div class="priority-list" id="priority-list"></div>
@@ -81,8 +83,10 @@
           <select id="status-filter" aria-label="Filtrer par statut">
             <option value="all">Tous les statuts</option>
             <option value="Nouveau">Nouveau</option>
-            <option value="A planifier">A planifier</option>
-            <option value="En cours">En cours</option>
+            <option value="Qualifié">Qualifié</option>
+            <option value="A rappeler">A rappeler</option>
+            <option value="Planifié">Planifié</option>
+            <option value="En intervention">En intervention</option>
             <option value="Terminé">Terminé</option>
           </select>
         </div>
@@ -90,8 +94,8 @@
           <table>
             <thead>
               <tr>
-                <th>Client</th>
-                <th>Service</th>
+                <th>Demande</th>
+                <th>Traitement</th>
                 <th>Urgence</th>
                 <th>Créneau</th>
                 <th>Statut</th>
@@ -149,16 +153,25 @@
         </select>
       </label>
       <label>
+        Téléphone
+        <input name="phone" placeholder="06 00 00 00 00">
+      </label>
+      <label>
         Créneau
         <input name="slot" required placeholder="Aujourd'hui 14h00">
       </label>
       <label>
         Urgence
         <select name="priority">
+          <option>Critique</option>
           <option>Haute</option>
           <option>Moyenne</option>
           <option>Basse</option>
         </select>
+      </label>
+      <label>
+        Note
+        <input name="note" placeholder="Fuite sous évier, client disponible le matin">
       </label>
       <div class="dialog-actions">
         <button value="cancel" type="button" class="secondary-action" id="cancel-dialog">Annuler</button>
