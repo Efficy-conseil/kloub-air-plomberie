@@ -1,5 +1,6 @@
 name: Publier le frontend
 
+# Relancer ce workflow suffit à republier le frontend statique Kloub Air.
 on:
   push:
     branches: [main]
