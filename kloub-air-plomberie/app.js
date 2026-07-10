@@ -1,89 +1,10 @@
-const CONFIG = Object.freeze({
-  backendEnabled: false,
-  sheetsUrl: '',
-  storageKey: 'kloub-air-plomberie-demo-requests-v2',
-});
-
-const statusFlow = ['Nouveau', 'Qualifié', 'A rappeler', 'Planifié', 'En intervention', 'Terminé'];
-const priorityFlow = ['Critique', 'Haute', 'Moyenne', 'Basse'];
-
-const statusMeta = {
-  Nouveau: { label: 'Nouveau', action: 'Qualifier', next: 'Qualifié' },
-  Qualifié: { label: 'Qualifié', action: 'Planifier', next: 'Planifié' },
-  'A rappeler': { label: 'A rappeler', action: 'Relancé', next: 'Qualifié' },
-  Planifié: { label: 'Planifié', action: 'Envoyer', next: 'En intervention' },
-  'En intervention': { label: 'En intervention', action: 'Clôturer', next: 'Terminé' },
-  Terminé: { label: 'Terminé', action: 'Archivé', next: 'Terminé' },
-};
-
-const seedRequests = [
-  {
-    id: 'demo-1',
-    client: 'Mme Martin',
-    phone: '06 18 42 70 11',
-    service: 'Dépannage urgent',
-    priority: 'Critique',
-    slot: "Aujourd'hui 09h30",
-    status: 'Nouveau',
-    source: 'Téléphone',
-    note: 'Fuite active sous évier, couper arrivée conseillé.',
-  },
-  {
-    id: 'demo-2',
-    client: 'SCI Les Pins',
-    phone: '04 92 00 14 80',
-    service: 'Climatisation',
-    priority: 'Moyenne',
-    slot: "Aujourd'hui 14h00",
-    status: 'Planifié',
-    source: 'Formulaire',
-    note: 'Contrôle split bureaux, accès gardien.',
-  },
-  {
-    id: 'demo-3',
-    client: 'M. Bernard',
-    phone: '06 77 10 45 32',
-    service: 'Plomberie',
-    priority: 'Haute',
-    slot: 'Demain 08h00',
-    status: 'A rappeler',
-    source: 'Message vocal',
-    note: 'Confirmer disponibilité et modèle de robinet.',
-  },
-  {
-    id: 'demo-4',
-    client: 'Cabinet médical Nord',
-    phone: '04 93 12 70 20',
-    service: 'Chauffage',
-    priority: 'Haute',
-    slot: 'Vendredi 10h30',
-    status: 'Qualifié',
-    source: 'Email',
-    note: 'Chaudière en défaut, devis à valider avant intervention.',
-  },
-  {
-    id: 'demo-5',
-    client: 'Mme Roux',
-    phone: '06 01 88 23 90',
-    service: 'Plomberie',
-    priority: 'Basse',
-    slot: 'Lundi 16h00',
-    status: 'Terminé',
-    source: 'Téléphone',
-    note: 'Remplacement flexible terminé.',
-  },
-  {
-    id: 'demo-6',
-    client: 'Restaurant Le Quai',
-    phone: '04 93 88 10 42',
-    service: 'Dépannage urgent',
-    priority: 'Critique',
-    slot: 'Dès que possible',
-    status: 'En intervention',
-    source: 'Téléphone',
-    note: 'Évacuation cuisine bouchée, service du soir menacé.',
-  },
-];
+const {
+  config: CONFIG,
+  priorityFlow,
+  seedRequests,
+  statusFlow,
+  statusMeta,
+} = window.KLOUB_AIR_DEMO;
 
 let requests = loadRequests();
 
