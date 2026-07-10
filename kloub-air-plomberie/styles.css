@@ -6,6 +6,10 @@
   --ice: #f4fbfe;
   --flame: #f31212;
   --flame-soft: #ffe7e4;
+  --amber: #f59f00;
+  --amber-soft: #fff3d1;
+  --green: #14865f;
+  --green-soft: #ddf7ec;
   --white: #ffffff;
   --line: #d8e7ef;
   --muted: #5d7082;
@@ -273,6 +277,73 @@ h4 {
   gap: 18px;
 }
 
+.urgency-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.urgency-lane {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.lane-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  color: var(--ink-strong);
+  background: var(--sky-soft);
+  font-weight: 800;
+}
+
+.urgency-critique .lane-header {
+  color: #8d0909;
+  background: var(--flame-soft);
+}
+
+.urgency-haute .lane-header {
+  color: #8a5200;
+  background: var(--amber-soft);
+}
+
+.urgency-basse .lane-header {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.lane-list {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.lane-item {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  color: var(--ink);
+  background: var(--ice);
+  text-align: left;
+}
+
+.lane-item strong,
+.lane-item span {
+  display: block;
+}
+
+.lane-item span,
+.empty-lane {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .surface {
   padding: 18px;
 }
@@ -308,7 +379,7 @@ h4 {
 
 .request-card {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
 }
 
@@ -324,6 +395,22 @@ h4 {
   font-size: 14px;
 }
 
+.request-card small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.card-meta,
+.timeline-meta {
+  display: grid;
+  justify-items: end;
+  align-content: start;
+  gap: 7px;
+}
+
 .pill {
   align-self: start;
   border-radius: 999px;
@@ -334,9 +421,54 @@ h4 {
   font-weight: 800;
 }
 
-.pill.high {
+.priority-critique {
   color: #8d0909;
   background: var(--flame-soft);
+}
+
+.priority-haute {
+  color: #8a5200;
+  background: var(--amber-soft);
+}
+
+.priority-moyenne {
+  color: var(--ink-strong);
+  background: var(--sky-soft);
+}
+
+.priority-basse {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  border-radius: 999px;
+  padding: 4px 9px;
+  color: var(--muted);
+  background: #edf3f7;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.status-nouveau,
+.status-a-rappeler {
+  color: #8d0909;
+  background: var(--flame-soft);
+}
+
+.status-qualifié,
+.status-planifié {
+  color: #8a5200;
+  background: var(--amber-soft);
+}
+
+.status-en-intervention,
+.status-terminé {
+  color: var(--green);
+  background: var(--green-soft);
 }
 
 .chart-row {
@@ -381,7 +513,7 @@ input {
 
 table {
   width: 100%;
-  min-width: 760px;
+  min-width: 1040px;
   border-collapse: collapse;
 }
 
@@ -400,6 +532,7 @@ th {
 
 td {
   color: var(--ink-strong);
+  vertical-align: top;
 }
 
 tr:last-child td {
@@ -410,6 +543,7 @@ tr:last-child td {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  min-width: 260px;
 }
 
 .table-action {
@@ -426,6 +560,21 @@ tr:last-child td {
 .table-action.danger {
   color: #8d0909;
   background: var(--flame-soft);
+}
+
+.muted-line {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
 }
 
 .settings-surface {
@@ -498,6 +647,7 @@ dialog::backdrop {
   }
 
   .kpi-grid,
+  .urgency-board,
   .content-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -541,8 +691,19 @@ dialog::backdrop {
   }
 
   .kpi-grid,
+  .urgency-board,
   .content-grid {
     grid-template-columns: 1fr;
+  }
+
+  .request-card,
+  .timeline-item {
+    grid-template-columns: 1fr;
+  }
+
+  .card-meta,
+  .timeline-meta {
+    justify-items: start;
   }
 
   .nav {
