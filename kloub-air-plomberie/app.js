@@ -1,24 +1,96 @@
 const CONFIG = Object.freeze({
   backendEnabled: false,
   sheetsUrl: '',
-  storageKey: 'kloub-air-plomberie-demo-requests-v1',
+  storageKey: 'kloub-air-plomberie-demo-requests-v2',
 });
 
-const seedRequests = [
-  { id: 'demo-1', client: 'Mme Martin', service: 'Dépannage urgent', priority: 'Haute', slot: "Aujourd'hui 09h30", status: 'Nouveau' },
-  { id: 'demo-2', client: 'SCI Les Pins', service: 'Climatisation', priority: 'Moyenne', slot: "Aujourd'hui 14h00", status: 'A planifier' },
-  { id: 'demo-3', client: 'M. Bernard', service: 'Plomberie', priority: 'Haute', slot: 'Demain 08h00', status: 'En cours' },
-  { id: 'demo-4', client: 'Cabinet médical Nord', service: 'Chauffage', priority: 'Moyenne', slot: 'Vendredi 10h30', status: 'A planifier' },
-  { id: 'demo-5', client: 'Mme Roux', service: 'Plomberie', priority: 'Basse', slot: 'Lundi 16h00', status: 'Terminé' },
-];
+const statusFlow = ['Nouveau', 'Qualifié', 'A rappeler', 'Planifié', 'En intervention', 'Terminé'];
+const priorityFlow = ['Critique', 'Haute', 'Moyenne', 'Basse'];
 
-const statusFlow = ['Nouveau', 'A planifier', 'En cours', 'Terminé'];
+const statusMeta = {
+  Nouveau: { label: 'Nouveau', action: 'Qualifier', next: 'Qualifié' },
+  Qualifié: { label: 'Qualifié', action: 'Planifier', next: 'Planifié' },
+  'A rappeler': { label: 'A rappeler', action: 'Relancé', next: 'Qualifié' },
+  Planifié: { label: 'Planifié', action: 'Envoyer', next: 'En intervention' },
+  'En intervention': { label: 'En intervention', action: 'Clôturer', next: 'Terminé' },
+  Terminé: { label: 'Terminé', action: 'Archivé', next: 'Terminé' },
+};
+
+const seedRequests = [
+  {
+    id: 'demo-1',
+    client: 'Mme Martin',
+    phone: '06 18 42 70 11',
+    service: 'Dépannage urgent',
+    priority: 'Critique',
+    slot: "Aujourd'hui 09h30",
+    status: 'Nouveau',
+    source: 'Téléphone',
+    note: 'Fuite active sous évier, couper arrivée conseillé.',
+  },
+  {
+    id: 'demo-2',
+    client: 'SCI Les Pins',
+    phone: '04 92 00 14 80',
+    service: 'Climatisation',
+    priority: 'Moyenne',
+    slot: "Aujourd'hui 14h00",
+    status: 'Planifié',
+    source: 'Formulaire',
+    note: 'Contrôle split bureaux, accès gardien.',
+  },
+  {
+    id: 'demo-3',
+    client: 'M. Bernard',
+    phone: '06 77 10 45 32',
+    service: 'Plomberie',
+    priority: 'Haute',
+    slot: 'Demain 08h00',
+    status: 'A rappeler',
+    source: 'Message vocal',
+    note: 'Confirmer disponibilité et modèle de robinet.',
+  },
+  {
+    id: 'demo-4',
+    client: 'Cabinet médical Nord',
+    phone: '04 93 12 70 20',
+    service: 'Chauffage',
+    priority: 'Haute',
+    slot: 'Vendredi 10h30',
+    status: 'Qualifié',
+    source: 'Email',
+    note: 'Chaudière en défaut, devis à valider avant intervention.',
+  },
+  {
+    id: 'demo-5',
+    client: 'Mme Roux',
+    phone: '06 01 88 23 90',
+    service: 'Plomberie',
+    priority: 'Basse',
+    slot: 'Lundi 16h00',
+    status: 'Terminé',
+    source: 'Téléphone',
+    note: 'Remplacement flexible terminé.',
+  },
+  {
+    id: 'demo-6',
+    client: 'Restaurant Le Quai',
+    phone: '04 93 88 10 42',
+    service: 'Dépannage urgent',
+    priority: 'Critique',
+    slot: 'Dès que possible',
+    status: 'En intervention',
+    source: 'Téléphone',
+    note: 'Évacuation cuisine bouchée, service du soir menacé.',
+  },
+];
 
 let requests = loadRequests();
 
 const panels = document.querySelectorAll('.panel');
 const navItems = document.querySelectorAll('.nav-item');
 const kpiGrid = document.getElementById('kpi-grid');
+const urgencyBoard = document.getElementById('urgency-board');
 const priorityList = document.getElementById('priority-list');
 const serviceChart = document.getElementById('service-chart');
 const todayCount = document.getElementById('today-count');
@@ -28,17 +100,29 @@ const timeline = document.getElementById('timeline');
 const dialog = document.getElementById('request-dialog');
 const form = document.getElementById('request-form');
 
+function normalizeRequest(request, index = 0) {
+  return {
+    id: request.id || `saved-${index}-${Date.now()}`,
+    client: request.client || 'Client sans nom',
+    phone: request.phone || '',
+    service: request.service || 'Plomberie',
+    priority: priorityFlow.includes(request.priority) ? request.priority : 'Moyenne',
+    slot: request.slot || 'A planifier',
+    status: statusFlow.includes(request.status) ? request.status : 'Nouveau',
+    source: request.source || 'Saisie locale',
+    note: request.note || '',
+  };
+}
+
 function loadRequests() {
   const saved = localStorage.getItem(CONFIG.storageKey);
-  if (!saved) return [...seedRequests];
+  if (!saved) return seedRequests.map(normalizeRequest);
 
   try {
     const parsed = JSON.parse(saved);
-    return Array.isArray(parsed)
-      ? parsed.map((request, index) => ({ id: request.id || `saved-${index}-${Date.now()}`, ...request }))
-      : [...seedRequests];
+    return Array.isArray(parsed) ? parsed.map(normalizeRequest) : seedRequests.map(normalizeRequest);
   } catch {
-    return [...seedRequests];
+    return seedRequests.map(normalizeRequest);
   }
 }
 
@@ -46,13 +130,26 @@ function saveRequests() {
   localStorage.setItem(CONFIG.storageKey, JSON.stringify(requests));
 }
 
-function byPriority(a, b) {
-  const weights = { Haute: 0, Moyenne: 1, Basse: 2 };
-  return weights[a.priority] - weights[b.priority];
+function priorityRank(priority) {
+  const index = priorityFlow.indexOf(priority);
+  return index === -1 ? priorityFlow.length : index;
+}
+
+function statusRank(status) {
+  const index = statusFlow.indexOf(status);
+  return index === -1 ? statusFlow.length : index;
+}
+
+function byOperationalPriority(a, b) {
+  return priorityRank(a.priority) - priorityRank(b.priority) || statusRank(a.status) - statusRank(b.status);
 }
 
 function priorityClass(priority) {
-  return priority === 'Haute' ? 'pill high' : 'pill';
+  return `pill priority-${priority.toLowerCase().replaceAll(' ', '-')}`;
+}
+
+function statusClass(status) {
+  return `status-badge status-${status.toLowerCase().replaceAll(' ', '-')}`;
 }
 
 function escHtml(value) {
@@ -64,30 +161,70 @@ function escHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+function countWhere(predicate) {
+  return requests.filter(predicate).length;
+}
+
+function activeRequests() {
+  return requests.filter((request) => request.status !== 'Terminé');
+}
+
 function nextStatus(status) {
-  const currentIndex = statusFlow.indexOf(status);
-  return statusFlow[Math.min(currentIndex + 1, statusFlow.length - 1)] || statusFlow[0];
+  return statusMeta[status]?.next || 'Nouveau';
+}
+
+function nextAction(status) {
+  return statusMeta[status]?.action || 'Traiter';
+}
+
+function movePriority(priority, direction) {
+  const index = priorityRank(priority);
+  const nextIndex = Math.max(0, Math.min(priorityFlow.length - 1, index + direction));
+  return priorityFlow[nextIndex];
 }
 
 function renderKpis() {
-  const active = requests.filter((request) => request.status !== 'Terminé').length;
-  const urgent = requests.filter((request) => request.priority === 'Haute').length;
-  const planned = requests.filter((request) => request.status === 'A planifier').length;
-  const done = requests.filter((request) => request.status === 'Terminé').length;
+  const waiting = countWhere((request) => ['Nouveau', 'Qualifié', 'A rappeler'].includes(request.status));
+  const critical = countWhere((request) => request.priority === 'Critique' && request.status !== 'Terminé');
+  const callbacks = countWhere((request) => request.status === 'A rappeler');
+  const planned = countWhere((request) => ['Planifié', 'En intervention'].includes(request.status));
 
   kpiGrid.innerHTML = [
-    ['Demandes actives', active],
-    ['Urgences', urgent],
-    ['A planifier', planned],
-    ['Terminées', done],
+    ['A traiter', waiting],
+    ['Critiques', critical],
+    ['A rappeler', callbacks],
+    ['Terrain', planned],
   ].map(([label, value]) => `<article class="kpi-card"><span>${label}</span><strong>${value}</strong></article>`).join('');
 }
 
+function renderUrgencyBoard() {
+  urgencyBoard.innerHTML = priorityFlow.map((priority) => {
+    const items = activeRequests()
+      .filter((request) => request.priority === priority)
+      .sort(byOperationalPriority)
+      .slice(0, 3);
+
+    return `
+      <article class="urgency-lane urgency-${priority.toLowerCase()}">
+        <div class="lane-header">
+          <span>${escHtml(priority)}</span>
+          <strong>${items.length}</strong>
+        </div>
+        <div class="lane-list">
+          ${items.map((request) => `
+            <button class="lane-item" type="button" data-jump="requests">
+              <strong>${escHtml(request.client)}</strong>
+              <span>${escHtml(request.service)} · ${escHtml(request.status)}</span>
+            </button>
+          `).join('') || '<p class="empty-lane">Aucune demande</p>'}
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
 function renderPriorities() {
-  const priorityRequests = [...requests]
-    .filter((request) => request.status !== 'Terminé')
-    .sort(byPriority)
-    .slice(0, 4);
+  const priorityRequests = activeRequests().sort(byOperationalPriority).slice(0, 5);
 
   todayCount.textContent = `${priorityRequests.length} demande${priorityRequests.length > 1 ? 's' : ''}`;
   priorityList.innerHTML = priorityRequests.map((request) => `
@@ -95,8 +232,12 @@ function renderPriorities() {
       <div>
         <strong>${escHtml(request.client)}</strong>
         <p>${escHtml(request.service)} · ${escHtml(request.slot)}</p>
+        <small>${escHtml(request.note || request.source)}</small>
       </div>
-      <span class="${priorityClass(request.priority)}">${escHtml(request.priority)}</span>
+      <div class="card-meta">
+        <span class="${priorityClass(request.priority)}">${escHtml(request.priority)}</span>
+        <span class="${statusClass(request.status)}">${escHtml(nextAction(request.status))}</span>
+      </div>
     </article>
   `).join('');
 }
@@ -119,20 +260,31 @@ function renderChart() {
 
 function renderRows() {
   const selectedStatus = statusFilter.value;
-  const visibleRequests = selectedStatus === 'all'
+  const visibleRequests = (selectedStatus === 'all'
     ? requests
-    : requests.filter((request) => request.status === selectedStatus);
+    : requests.filter((request) => request.status === selectedStatus)
+  ).sort(byOperationalPriority);
 
   requestRows.innerHTML = visibleRequests.map((request) => `
     <tr data-id="${escHtml(request.id)}">
-      <td>${escHtml(request.client)}</td>
-      <td>${escHtml(request.service)}</td>
+      <td>
+        <strong>${escHtml(request.client)}</strong>
+        <span class="muted-line">${escHtml(request.phone || request.source)}</span>
+        <span class="muted-line">${escHtml(request.service)}</span>
+      </td>
+      <td>
+        <strong>${escHtml(nextAction(request.status))}</strong>
+        <span class="muted-line">${escHtml(request.note || 'Aucune note')}</span>
+      </td>
       <td><span class="${priorityClass(request.priority)}">${escHtml(request.priority)}</span></td>
       <td>${escHtml(request.slot)}</td>
-      <td>${escHtml(request.status)}</td>
+      <td><span class="${statusClass(request.status)}">${escHtml(request.status)}</span></td>
       <td>
         <div class="row-actions">
-          <button type="button" class="table-action" data-action="advance">${request.status === 'Terminé' ? 'Archivé' : 'Avancer'}</button>
+          <button type="button" class="table-action" data-action="advance">${escHtml(nextAction(request.status))}</button>
+          <button type="button" class="table-action" data-action="recall">Rappel</button>
+          <button type="button" class="table-action" data-action="escalate">Urgence +</button>
+          <button type="button" class="table-action" data-action="deescalate">Urgence -</button>
           <button type="button" class="table-action danger" data-action="delete">Supprimer</button>
         </div>
       </td>
@@ -141,32 +293,43 @@ function renderRows() {
 }
 
 function renderTimeline() {
-  timeline.innerHTML = [...requests]
-    .filter((request) => request.status !== 'Terminé')
-    .sort(byPriority)
+  timeline.innerHTML = activeRequests()
+    .sort(byOperationalPriority)
     .map((request) => `
       <article class="timeline-item">
-        <strong>${escHtml(request.slot)}</strong>
-        <p>${escHtml(request.client)} · ${escHtml(request.service)} · ${escHtml(request.status)}</p>
+        <div>
+          <strong>${escHtml(request.slot)}</strong>
+          <p>${escHtml(request.client)} · ${escHtml(request.service)}</p>
+        </div>
+        <div class="timeline-meta">
+          <span class="${priorityClass(request.priority)}">${escHtml(request.priority)}</span>
+          <span class="${statusClass(request.status)}">${escHtml(request.status)}</span>
+        </div>
       </article>
     `).join('');
 }
 
 function render() {
   renderKpis();
+  renderUrgencyBoard();
   renderPriorities();
   renderChart();
   renderRows();
   renderTimeline();
 }
 
+function openPanel(panelId) {
+  navItems.forEach((navItem) => navItem.classList.toggle('is-active', navItem.dataset.panel === panelId));
+  panels.forEach((panel) => panel.classList.toggle('is-active', panel.id === panelId));
+}
+
 navItems.forEach((item) => {
-  item.addEventListener('click', () => {
-    navItems.forEach((navItem) => navItem.classList.remove('is-active'));
-    panels.forEach((panel) => panel.classList.remove('is-active'));
-    item.classList.add('is-active');
-    document.getElementById(item.dataset.panel).classList.add('is-active');
-  });
+  item.addEventListener('click', () => openPanel(item.dataset.panel));
+});
+
+urgencyBoard.addEventListener('click', (event) => {
+  if (!event.target.closest('[data-jump]')) return;
+  openPanel('requests');
 });
 
 statusFilter.addEventListener('change', renderRows);
@@ -181,12 +344,15 @@ requestRows.addEventListener('click', (event) => {
 
   if (button.dataset.action === 'delete') {
     requests = requests.filter((request) => request.id !== id);
-  }
-
-  if (button.dataset.action === 'advance') {
-    requests = requests.map((request) => (
-      request.id === id ? { ...request, status: nextStatus(request.status) } : request
-    ));
+  } else {
+    requests = requests.map((request) => {
+      if (request.id !== id) return request;
+      if (button.dataset.action === 'advance') return { ...request, status: nextStatus(request.status) };
+      if (button.dataset.action === 'recall') return { ...request, status: 'A rappeler' };
+      if (button.dataset.action === 'escalate') return { ...request, priority: movePriority(request.priority, -1) };
+      if (button.dataset.action === 'deescalate') return { ...request, priority: movePriority(request.priority, 1) };
+      return request;
+    });
   }
 
   saveRequests();
@@ -202,7 +368,7 @@ document.getElementById('cancel-dialog').addEventListener('click', () => {
 });
 
 document.getElementById('reset-demo').addEventListener('click', () => {
-  requests = [...seedRequests];
+  requests = seedRequests.map(normalizeRequest);
   saveRequests();
   statusFilter.value = 'all';
   render();
@@ -212,14 +378,17 @@ form.addEventListener('submit', (event) => {
   event.preventDefault();
   const data = new FormData(form);
   requests = [
-    {
+    normalizeRequest({
       id: `local-${Date.now()}`,
       client: data.get('client').trim(),
+      phone: data.get('phone').trim(),
       service: data.get('service'),
       priority: data.get('priority'),
       slot: data.get('slot').trim(),
       status: 'Nouveau',
-    },
+      source: 'Saisie locale',
+      note: data.get('note').trim(),
+    }),
     ...requests,
   ];
   saveRequests();
